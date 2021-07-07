@@ -39,8 +39,8 @@ const deletePost = (key) => {
     xhttp.send();
 }
 
-const bringPost = (key) => {
-    const endpoint = `https://apikoder-b2ce0-default-rtdb.firebaseio.com/jorge/posts/${key}/.json`;
+const bringAllPosts = () => {
+    const endpoint = `https://apikoder-b2ce0-default-rtdb.firebaseio.com/jorge/posts/.json`;
     // Preparando el payload
     // Creando el objeto
     var xhttp = new XMLHttpRequest();
@@ -48,10 +48,16 @@ const bringPost = (key) => {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             let respuesta = JSON.parse(xhttp.responseText);
-            console.log(respuesta);
-            return respuesta
+            if(respuesta != null){
+                let arrayRespuestas = Object.entries(respuesta);
+                console.log(arrayRespuestas);
+                let padre = document.querySelector(".cards-father");
+                padre.innerHTML="";
+                arrayRespuestas.forEach(item=>{
+                padre.innerHTML+=createCard(item[0],item[1].title,item[1].body);
+                })
+            }
         }
-
     };
     // Configurar el verbo, la dirección
     xhttp.open("GET", endpoint, true);
@@ -140,3 +146,34 @@ const bringComment = (key) => {
     // Enviar la solicitud
     xhttp.send();
 }
+
+(function(){
+    bringAllPosts();
+    let createPostButton = document.getElementById('cardButton');
+    createPostButton.addEventListener('click',(event)=>{
+        let title = document.getElementById('cardTitle').value;
+        let body = document.getElementById('cardBody').value;
+        event.preventDefault();
+
+        savePost(title,body);
+        bringAllPosts();
+    });
+})()
+
+function createCard(key,title,body){
+    let cuerpo = body.slice(0,50).concat("...");
+    let card = `
+    <div class="card mb-3" >
+        <div class="card-body">
+            <h5 class="card-title">${title}</h5>
+            <p class="card-text">${cuerpo}</p>
+            <div class="d-flex justify-content-between">
+                <a href="second.html?data=${key}" target="_blank" data-key="${key}" class="btn btn-primary ver">ver Post</a>
+                <a href="#" data-key="${key}" class="btn btn-danger eliminar">Borrar Post</a>
+            </div>
+        </div>
+    </div>`
+    return card;
+}
+
+
